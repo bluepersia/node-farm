@@ -2,7 +2,13 @@ const dotenv = require('dotenv');
 
 dotenv.config({ path: './config.env' });
 
+const AppError = require('./utilities/appError');
+
 const http = require('http');
+
+const productRouter = require('./routes/productRoutes');
+
+const errorController = require('./controllers/errorController');
 
 const server = http.createServer();
 
@@ -11,8 +17,18 @@ server.listen(port, () => console.log(`Server started on port ${port}`));
 
 
 
-server.on('request', (req, res) => {
+server.on('request', async (req, res) => {
 
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(`<h1>You requested ${req.url}</h1>`);
+    const { url } = req;
+
+
+    if (url.startsWith('/api'))
+        await productRouter.route(req, res);
+
+
+    if (!res.finished)
+        req.error = new AppError(404, 'Page not found!');
+
+
+    errorController(req, res);
 });
