@@ -23,10 +23,10 @@ server.on('request', async (req, res) => {
 
 
     if (url.startsWith('/api'))
-        await productRouter.route(req, res);
+        await productRouter(req, res);
 
 
-    if (!res.finished)
+    if (!req.error && !res.finished)
         req.error = new AppError(404, 'Page not found!');
 
 

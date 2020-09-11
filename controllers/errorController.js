@@ -20,7 +20,7 @@ module.exports = function (req, res) {
         }
         else {
             rest.error = error;
-            rest.stack = err.stack;
+            rest.stack = error.stack;
         }
 
         if (url.startsWith('/api'))

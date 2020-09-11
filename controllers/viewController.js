@@ -1,8 +1,7 @@
-const fs = require('fs');
-const util = require('util');
+const fs = require('../utilities/fs');
 
 async function getTemplate(name) {
-    return await util.promisify(fs.readFile)(`./templates/${name}.html`, { encoding: 'utf8' });
+    return await fs.readFile(`./templates/${name}.html`, { encoding: 'utf8' });
 }
 
 function replaceTemplate(html, data) {
