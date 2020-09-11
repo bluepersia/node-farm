@@ -7,6 +7,7 @@ const AppError = require('./utilities/appError');
 const http = require('http');
 
 const productRouter = require('./routes/productRoutes');
+const viewRouter = require('./routes/viewRoutes');
 
 const errorController = require('./controllers/errorController');
 
@@ -24,7 +25,8 @@ server.on('request', async (req, res) => {
 
     if (url.startsWith('/api'))
         await productRouter(req, res);
-
+    else
+        await viewRouter(req, res);
 
     if (!req.error && !res.finished)
         req.error = new AppError(404, 'Page not found!');
