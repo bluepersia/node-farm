@@ -1,6 +1,8 @@
 const fs = require('../utilities/fs');
 const productModel = require('../models/productModel');
 const catchASync = require('./catchASync');
+const url = require('url');
+const AppError = require('../utilities/AppError');
 
 async function getTemplate(name) {
     return await fs.readFile(`./templates/${name}.html`, 'utf-8');
@@ -12,6 +14,8 @@ function replaceTemplate(html, data) {
 
         html = html.replace(regExp, value);
     }
+
+    html = html.replace('{%NOT_ORGANIC%}', data.organic ? '' : 'not-organic');
 
     return html;
 }
@@ -34,22 +38,28 @@ module.exports.render = render;
 
 
 
-function renderProduct(html, product) {
-
-    html = replaceTemplate(html, product);
-
-    html = html.replace('{%NOT_ORGANIC%}', product.organic ? '' : 'not-organic');
-
-    return html;
-}
-
 module.exports.getOverview = catchASync(async function (req, res) {
     const products = await productModel.getAll();
 
     const cardHTML = await getTemplate('card');
 
-    const productCards = products.map(product => renderProduct(cardHTML, product));
+    const productCards = products.map(product => replaceTemplate(cardHTML, product));
 
-    render(res, 200, 'overview', { productCards });
+    await render(res, 200, 'overview', { productCards });
 
+});
+
+
+module.exports.getProduct = catchASync(async function (req, res) {
+
+    const { query: { slug } } = url.parse(req.url, true);
+
+    const product = await productModel.getBySlug(slug);
+
+    if (!product) {
+        req.error = new AppError(404, 'Product not found!');
+        return;
+    }
+
+    await render(res, 200, 'product', product);
 });
